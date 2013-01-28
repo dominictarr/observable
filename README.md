@@ -2,6 +2,8 @@
 
 A function as representation of a trackable mutable value.
 
+[Interactive Demo](http://dominictarr.github.com/observable)
+
 It's basically just a `function` that can be called in 3 ways,
 If an observable is called with no arguments `f()`, it returns the current value.
 If it is called with an argument `f(value)`, it set that as the value.
