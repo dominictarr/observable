@@ -59,6 +59,35 @@ Oh, wow! wasn't that easy! and we did a lot of things there!
 
 And there is many other cool things we can do to!
 
+Here is a simpler example
+
+``` js
+var o = require('observable')
+var h = require('hyperscript')
+var _i, i
+h('div',
+  _i = h('input', {type: 'checkbox'}),
+  'checked:', i = o.input(_i, 'checked', 'change'),
+  ' !checked:', o.not(i)
+)
+```
+
+Hmm, I wonder if we could couple two things interms of each other?
+
+``` js
+var o = require('observable')
+var h = require('hyperscript')
+var _i = h('input', {type: 'checkbox'})
+var _j = h('input', {type: 'checkbox'})
+var i = o.input(_i, 'checked', 'change')
+var j = o.input(_j, 'checked', 'change')
+
+//just make i != j & j != i
+j(o.not(i)); i(o.not(j)); j(Math.random() > 0.5)
+
+h('div', _i, _j)
+```
+
 ## License
 
 MIT
