@@ -7,75 +7,59 @@ it is a `function` that can be called in 3 ways,
 and represents a mutable value.
 
 If an observable is called with no arguments, it returns the current value.
-``` js
-var observable = require('observable')
-var o = observable()
->o()
-undefined
-```
-
 If it is called with an argument, it set that as the value.
 ``` js
->o(true)
->o()
-true
+var o = require('observable')
+var v = o()
+
+//set the value
+v(Math.random())
+
+//get the value
+v()
 ```
 
 And, finally, if an observable is called with another function,
 it _calls_ that function with the new value, whenever the value changes.
 
 ``` js
->o(function (v) {console.log('UPDATE', v)})
->o(true)
-UPDATE true
->o('whatever')
-UPDATE whatever
+var o = require('observable')
+var v = o()
+
+v(0)
+
+setInterval(function () {
+  v(v() + 1)
+}, 500)
+
+v
 ```
 
-one of the useful things about functions in javascript is that you can wrap them in other
-functions to change them into another function.
+How is this demo updating in real-time like that? It's becasue `observable` is integrated
+into [hyperscript](https://github.com/dominictarr/hyperscript)!
 
 ``` js
->var n = not(o)
->n(true)
->o()
-false
->o(false)
->n()
-true
+var o = require('observable')
+var h = require('hyperscript')
+var yourName
+  
+h('div', 
+  h('h3', 'hello, what is your name?',
+    yourName = h('input', {placeholder: 'enter name'})
+  ),
+  h('h2', o.transform(o.input(yourName), function (v) {
+    return v ? 'Happy Birthday ' + v.toUpperCase() + ' !!!': ''
+  }), {style: {'font-family': 'Comic Sans MS'}})
+)
 ```
 
-The basic features of an `observable` are setting a value, getting a property,
-and being notified about updates! There are lots of things that behave just
-like that already, but without actually providing the simple `observable` api.
+Oh, wow! wasn't that easy! and we did a lot of things there!
 
-For example, a text `<input>` field.
+* made hyper text that updated in realtime
+* read from an input as you typed
+* transformed user input
 
-``` js
-/*
-function input (in) {
-  var _val = in.value
-  return function (val) {
-    if(val === undefined) {
-      return 
-    } else if ('function' !== val) {
-      in.value = val
-    } else {
-      function onInput () { val(in.value) }
-      in.addEventListener('input', onInput)
-      //return a remove function - this will be important later.
-      return function () {
-        in.removeListener('input', onInput) 
-      }
-    }
-  }
-*/
-hmm, so this is too wordy... maybe I should just show h...
-
-```
-
-let's use that to 
-
+and there is many other cool things we can do to!
 
 ## License
 
