@@ -766,6 +766,30 @@ h('div',
     return v ? 'Happy Birthday ' + v.toUpperCase() + ' !!!': ''
   }), {style: {'font-family': 'Comic Sans MS'}})
 )
+},
+function () {
+var o = require('observable')
+var h = require('hyperscript')
+var _i, i
+h('div',
+  _i = h('input', {type: 'checkbox'}),
+  'checked:', i = o.input(_i, 'checked', 'change'),
+  ' !checked:', o.not(i)
+)
+},
+function () {
+var o = require('observable')
+var h = require('hyperscript')
+var _i = h('input', {type: 'checkbox'})
+var _j = h('input', {type: 'checkbox'})
+var i = o.input(_i, 'checked', 'change')
+var j = o.input(_j, 'checked', 'change')
+j(o.not(i))
+i(o.not(j))
+j(true)
+h('div',
+  _i, _j
+)
 }
 ];
 
@@ -781,13 +805,9 @@ require("/tmp.js");
 <p>A function as representation of a trackable mutable value.
 
 </p>
-<p>An observable is a very simple idea, 
-it is a <code>function</code> that can be called in 3 ways,
-and represents a mutable value.
-
-</p>
-<p>If an observable is called with no arguments, it returns the current value.
-If it is called with an argument, it set that as the value.
+<p>It&#39;s basically just a <code>function</code> that can be called in 3 ways,
+If an observable is called with no arguments <code>f()</code>, it returns the current value.
+If it is called with an argument <code>f(value)</code>, it set that as the value.
 </p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
 var v = o()
@@ -797,7 +817,7 @@ v(Math.random())
 
 //get the value
 v()</code></pre>
-<p>And, finally, if an observable is called with another function,
+<p>And, finally, if an observable is called with another function, <code>f(function (v) {...})</code>,
 it <em>calls</em> that function with the new value, whenever the value changes.
 
 </p>
@@ -811,8 +831,9 @@ setInterval(function () {
 }, 500)
 
 v</code></pre>
-<p>How is this demo updating in real-time like that? It&#39;s becasue <code>observable</code> is integrated
-into <a href="https://github.com/dominictarr/hyperscript">hyperscript</a>!
+<p>How is this demo updating in real-time like that?
+It&#39;s becasue <code>observable</code> is integrated into 
+<a href="https://github.com/dominictarr/hyperscript">hyperscript</a>!
 
 </p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
@@ -835,9 +856,32 @@ h(&#39;div&#39;,
 <li>read from an input as you typed</li>
 <li>transformed user input</li>
 </ul>
-<p>and there is many other cool things we can do to!
+<p>And there is many other cool things we can do to!
 
 </p>
+<p>Here is a simpler example
+
+</p>
+<pre><code class="lang-js">var o = require(&#39;observable&#39;)
+var h = require(&#39;hyperscript&#39;)
+var _i, i
+h(&#39;div&#39;,
+  _i = h(&#39;input&#39;, {type: &#39;checkbox&#39;}),
+  &#39;checked:&#39;, i = o.input(_i, &#39;checked&#39;, &#39;change&#39;),
+  &#39; !checked:&#39;, o.not(i)
+)</code></pre>
+<pre><code class="lang-js">var o = require(&#39;observable&#39;)
+var h = require(&#39;hyperscript&#39;)
+var _i = h(&#39;input&#39;, {type: &#39;checkbox&#39;})
+var _j = h(&#39;input&#39;, {type: &#39;checkbox&#39;})
+var i = o.input(_i, &#39;checked&#39;, &#39;change&#39;)
+var j = o.input(_j, &#39;checked&#39;, &#39;change&#39;)
+j(o.not(i))
+i(o.not(j))
+j(true)
+h(&#39;div&#39;,
+  _i, _j
+)</code></pre>
 <h2>License</h2>
 <p>MIT
 </p>
