@@ -784,12 +784,11 @@ var _i = h('input', {type: 'checkbox'})
 var _j = h('input', {type: 'checkbox'})
 var i = o.input(_i, 'checked', 'change')
 var j = o.input(_j, 'checked', 'change')
-j(o.not(i))
-i(o.not(j))
-j(true)
-h('div',
-  _i, _j
-)
+
+//just make i != j & j != i
+j(o.not(i)); i(o.not(j)); j(Math.random() > 0.5)
+
+h('div', _i, _j)
 }
 ];
 
@@ -803,6 +802,9 @@ require("/tmp.js");
     <div class=container><div class=markdown>
       <h1>observable</h1>
 <p>A function as representation of a trackable mutable value.
+
+</p>
+<p><a href="http://dominictarr.github.com/observable">Interactive Demo</a>
 
 </p>
 <p>It&#39;s basically just a <code>function</code> that can be called in 3 ways,
@@ -870,18 +872,20 @@ h(&#39;div&#39;,
   &#39;checked:&#39;, i = o.input(_i, &#39;checked&#39;, &#39;change&#39;),
   &#39; !checked:&#39;, o.not(i)
 )</code></pre>
+<p>Hmm, I wonder if we could couple two things interms of each other?
+
+</p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
 var h = require(&#39;hyperscript&#39;)
 var _i = h(&#39;input&#39;, {type: &#39;checkbox&#39;})
 var _j = h(&#39;input&#39;, {type: &#39;checkbox&#39;})
 var i = o.input(_i, &#39;checked&#39;, &#39;change&#39;)
 var j = o.input(_j, &#39;checked&#39;, &#39;change&#39;)
-j(o.not(i))
-i(o.not(j))
-j(true)
-h(&#39;div&#39;,
-  _i, _j
-)</code></pre>
+
+//just make i != j &amp; j != i
+j(o.not(i)); i(o.not(j)); j(Math.random() &gt; 0.5)
+
+h(&#39;div&#39;, _i, _j)</code></pre>
 <h2>License</h2>
 <p>MIT
 </p>
