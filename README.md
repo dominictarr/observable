@@ -7,6 +7,7 @@ A function as representation of a trackable mutable value.
 It's basically just a `function` that can be called in 3 ways,
 If an observable is called with no arguments `f()`, it returns the current value.
 If it is called with an argument `f(value)`, it set that as the value.
+
 ``` js
 var o = require('observable')
 var v = o()
@@ -18,8 +19,11 @@ v(Math.random())
 v()
 ```
 
-And, finally, if an observable is called with another function, `f(function (v) {...})`,
-it _calls_ that function with the new value, whenever the value changes.
+And, finally, if an observable is called with another function, 
+`f(function (v) {...})`, it _calls_ that function with the new value, 
+whenever the value changes.
+
+## value
 
 ``` js
 var o = require('observable')
@@ -35,8 +39,13 @@ v
 ```
 
 How is this demo updating in real-time like that?
-It's becasue `observable` is integrated into 
+It's because `observable` is integrated into 
 [hyperscript](https://github.com/dominictarr/hyperscript)!
+
+## input, & transform
+
+observe a input field, and transform it into different string.
+this transformation is a one way observable.
 
 ``` js
 var o = require('observable')
@@ -61,7 +70,9 @@ Oh, wow! wasn't that easy! and we did a lot of things there!
 
 And there is many other cool things we can do to!
 
-Here is a simpler example
+# not
+
+Invert a boolean `observable`
 
 ``` js
 var o = require('observable')
@@ -85,9 +96,44 @@ var i = o.input(_i, 'checked', 'change')
 var j = o.input(_j, 'checked', 'change')
 
 //just make i != j & j != i
-j(o.not(i)); i(o.not(j)); j(Math.random() > 0.5)
+i(Math.random() < 0.5)
+
+o.bind2(o.not(i), j)
 
 h('div', _i, _j)
+```
+
+## compute
+
+Compute a value from others, like a computed value in SQL.
+
+``` js
+var o = require('observable')
+var h = require('hyperscript')
+var i, j
+h('div', 
+  i = h('input', {placeholder: 'first name'}),
+  j = h('input', {placeholder: 'last name'}),
+  h('h1', 'Greetings, ',
+    o.compute([o.input(i), o.input(j)], function (f, l) {
+      return f + ' ' + l + (f && l ? ' !' : '')
+    })
+  )
+)
+```
+
+## hover
+
+go true when the mouse is placed over an element
+
+``` js
+var o = require('observable')
+var h = require('hyperscript')
+var v = o()
+var d = h('h1', v, ' - ', o.boolean(v, 'OVER!', 'out'))
+o.bind1(v, o.hover(d)) //bind v to hover
+
+d
 ```
 
 ## License
