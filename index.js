@@ -1,31 +1,61 @@
 ;(function () {
 
+// bind a to b -- One Way Binding
+function bind1(a, b) {
+  a(b()); b(a)
+}
+//bind a to b and b to a -- Two Way Binding
+function bind2(a, b) {
+  b(a()); a(b); b(a); 
+}
+
 //---util-funtions------
 
+//check if this call is a get.
+function isGet(val) {
+  return undefined === val
+}
+
+//check if this call is a set, else, it's a listen
+function isSet(val) {
+  return 'function' !== typeof val
+}
+
+//trigger all listeners
 function all(ary, val) {
   for(var k in ary)
     ary[k](val)
 }
 
+//remove a listener
 function remove(ary, item) {
   delete ary[ary.indexOf(item)]  
 }
 
-/*
-##value
-An observable that stores a value.
-*/
+//register a listener
+function on(emitter, event, listener) {
+  (emitter.on || emitter.addEventListener)
+    .call(emitter, event, listener, false)
+}
+
+function off(emitter, event, listener) {
+  (emitter.removeListener || emitter.removeEventListener || emitter.off)
+    .call(emitter, event, listener, false)
+}
+
+//An observable that stores a value.
 
 function value () {
   var _val, listeners = []
   return function (val) {
     return (
-      get(val) ? _val
-    : set(val) ? all(listeners, _val = val)
+      isGet(val) ? _val
+    : isSet(val) ? all(listeners, _val = val)
     : (listeners.push(val), function () {
         remove(listeners, val)
       })
   )}}
+  //^ if written in this style, always ends )}}
 
 /*
 ##property
@@ -33,36 +63,15 @@ observe a property of an object, works with scuttlebutt.
 could change this to work with backbone Model - but it would become ugly.
 */
 
-function get(val) {
-  //void(0) is a trick to get a true undefined value, even if user has overwrit
-  return undefined === val
-}
-
-/*
-### set(val) _(private)_
-return true if this call is a set (a non function is supplied)
-set(val) assumes you have already checked get(val)
-if the call is neither a get or a set, a function is passed, it's a listen.
-*/
-
-function set(val) {
-  return 'function' !== typeof val
-}
-
-/*
-now, lets rewrite our first example
-*/
-
 function property (model, key) {
   return function (val) {
     return (
-      get(val) ? model.get(key) :
-      set(val) ? model.set(key, val) :
-      (model.on('change:'+key, val), function () {
-        model.removeListener('change:'+key, val)
+      isGet(val) ? model.get(key) :
+      isSet(val) ? model.set(key, val) :
+      (on(model, 'change:'+key, val), function () {
+        off(model, 'change:'+key, val)
       })
     )}}
-    //^ if written in this style, always ends )}}
 
 /*
 note the use of the elvis operator `?:` in chained else-if formation,
@@ -75,8 +84,8 @@ only 8 lines! that isn't much for what this baby can do!
 function transform (observable, down, up) {
   return function (val) {
     return (
-      get(val) ? down(observable())
-    : set(val) ? observable((up || down)(val))
+      isGet(val) ? down(observable())
+    : isSet(val) ? observable((up || down)(val))
     : observable(function (_val) { val(down(_val)) })
     )}}
 
@@ -88,24 +97,42 @@ function listen (element, event, attr, listener) {
   function onEvent () {
     listener(element[attr])
   }
-  element.addEventListener(event, onEvent, false)
+  on(element, event, onEvent)
   return function () {
-    element.removeEventListener(event, onEvent, false)
+    off(element, event, onEvent)
   }
 }
 
+//observe html element - aliased as `input`
 function attribute(element, attr, event) {
   attr = attr || 'value'; event = event || 'input'
   return function (val) {
     return (
-      get(val) ? element[attr]
-    : set(val) ? element[attr] = val
+      isGet(val) ? element[attr]
+    : isSet(val) ? element[attr] = val
     : listen(element, event, attr, val)
     )}}
 
+//toggle based on an event, like mouseover, mouseout
+function toggle (el, up, down) {
+  var i = false
+  return function (val) {
+    function onUp() {
+      i || val(i = true)
+    }
+    function onDown () {
+      i && val(i = false)
+    }
+    return (
+      isGet(val) ? i
+    : isSet(val) ? undefined //read only
+    : (on(el, up, onUp), on(el, down || up, onDown), function () {
+      off(el, up, onUp); off(el, down || up, onDown)
+    })
+  )}}
 
-function html (element) {
-  return attribute(element, 'innerHTML', false) //read only
+function hover (el) {
+  return toggle(el, 'mouseover', 'mouseout')
 }
 
 function error (message) {
@@ -118,8 +145,8 @@ function compute (observables, compute) {
   }
   return function (val) {
     return (
-      get(val) ? getAll()
-    : set(val) ? error('read-only')
+      isGet(val) ? getAll()
+    : isSet(val) ? error('read-only')
     : observables.forEach(function (obs) {
         obs(function () { val(getAll()) })
       })
@@ -134,15 +161,17 @@ function boolean (observable, truthy, falsey) {
   }
 
 var exports = value
-
+exports.bind1     = bind1
+exports.bind2     = bind2
 exports.value     = value
 exports.not       = not
 exports.input     =
 exports.attribute = attribute
-exports.html      = html
 exports.compute   = compute
 exports.transform = transform
 exports.boolean   = boolean
+exports.toggle    = toggle
+exports.hover     = hover
 
 if('object' === typeof module) module.exports = exports
 else                           this.observable = exports
