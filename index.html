@@ -481,32 +481,62 @@ require.define("/node_modules/observable/node_modules/observable/package.json",f
 
 require.define("/node_modules/observable/index.js",function(require,module,exports,__dirname,__filename,process,global){;(function () {
 
+// bind a to b -- One Way Binding
+function bind1(a, b) {
+  a(b()); b(a)
+}
+//bind a to b and b to a -- Two Way Binding
+function bind2(a, b) {
+  b(a()); a(b); b(a); 
+}
+
 //---util-funtions------
 
+//check if this call is a get.
+function isGet(val) {
+  return undefined === val
+}
+
+//check if this call is a set, else, it's a listen
+function isSet(val) {
+  return 'function' !== typeof val
+}
+
+//trigger all listeners
 function all(ary, val) {
   for(var k in ary)
     ary[k](val)
 }
 
+//remove a listener
 function remove(ary, item) {
   delete ary[ary.indexOf(item)]  
 }
 
-/*
-##value
-An observable that stores a value.
-*/
+//register a listener
+function on(emitter, event, listener) {
+  (emitter.on || emitter.addEventListener)
+    .call(emitter, event, listener, false)
+}
+
+function off(emitter, event, listener) {
+  (emitter.removeListener || emitter.removeEventListener || emitter.off)
+    .call(emitter, event, listener, false)
+}
+
+//An observable that stores a value.
 
 function value () {
   var _val, listeners = []
   return function (val) {
     return (
-      get(val) ? _val
-    : set(val) ? all(listeners, _val = val)
+      isGet(val) ? _val
+    : isSet(val) ? all(listeners, _val = val)
     : (listeners.push(val), function () {
         remove(listeners, val)
       })
   )}}
+  //^ if written in this style, always ends )}}
 
 /*
 ##property
@@ -514,36 +544,15 @@ observe a property of an object, works with scuttlebutt.
 could change this to work with backbone Model - but it would become ugly.
 */
 
-function get(val) {
-  //void(0) is a trick to get a true undefined value, even if user has overwrit
-  return undefined === val
-}
-
-/*
-### set(val) _(private)_
-return true if this call is a set (a non function is supplied)
-set(val) assumes you have already checked get(val)
-if the call is neither a get or a set, a function is passed, it's a listen.
-*/
-
-function set(val) {
-  return 'function' !== typeof val
-}
-
-/*
-now, lets rewrite our first example
-*/
-
 function property (model, key) {
   return function (val) {
     return (
-      get(val) ? model.get(key) :
-      set(val) ? model.set(key, val) :
-      (model.on('change:'+key, val), function () {
-        model.removeListener('change:'+key, val)
+      isGet(val) ? model.get(key) :
+      isSet(val) ? model.set(key, val) :
+      (on(model, 'change:'+key, val), function () {
+        off(model, 'change:'+key, val)
       })
     )}}
-    //^ if written in this style, always ends )}}
 
 /*
 note the use of the elvis operator `?:` in chained else-if formation,
@@ -556,8 +565,8 @@ only 8 lines! that isn't much for what this baby can do!
 function transform (observable, down, up) {
   return function (val) {
     return (
-      get(val) ? down(observable())
-    : set(val) ? observable((up || down)(val))
+      isGet(val) ? down(observable())
+    : isSet(val) ? observable((up || down)(val))
     : observable(function (_val) { val(down(_val)) })
     )}}
 
@@ -569,24 +578,42 @@ function listen (element, event, attr, listener) {
   function onEvent () {
     listener(element[attr])
   }
-  element.addEventListener(event, onEvent, false)
+  on(element, event, onEvent)
   return function () {
-    element.removeEventListener(event, onEvent, false)
+    off(element, event, onEvent)
   }
 }
 
+//observe html element - aliased as `input`
 function attribute(element, attr, event) {
   attr = attr || 'value'; event = event || 'input'
   return function (val) {
     return (
-      get(val) ? element[attr]
-    : set(val) ? element[attr] = val
+      isGet(val) ? element[attr]
+    : isSet(val) ? element[attr] = val
     : listen(element, event, attr, val)
     )}}
 
+//toggle based on an event, like mouseover, mouseout
+function toggle (el, up, down) {
+  var i = false
+  return function (val) {
+    function onUp() {
+      i || val(i = true)
+    }
+    function onDown () {
+      i && val(i = false)
+    }
+    return (
+      isGet(val) ? i
+    : isSet(val) ? undefined //read only
+    : (on(el, up, onUp), on(el, down || up, onDown), function () {
+      off(el, up, onUp); off(el, down || up, onDown)
+    })
+  )}}
 
-function html (element) {
-  return attribute(element, 'innerHTML', false) //read only
+function hover (el) {
+  return toggle(el, 'mouseover', 'mouseout')
 }
 
 function error (message) {
@@ -599,8 +626,8 @@ function compute (observables, compute) {
   }
   return function (val) {
     return (
-      get(val) ? getAll()
-    : set(val) ? error('read-only')
+      isGet(val) ? getAll()
+    : isSet(val) ? error('read-only')
     : observables.forEach(function (obs) {
         obs(function () { val(getAll()) })
       })
@@ -615,15 +642,17 @@ function boolean (observable, truthy, falsey) {
   }
 
 var exports = value
-
+exports.bind1     = bind1
+exports.bind2     = bind2
 exports.value     = value
 exports.not       = not
 exports.input     =
 exports.attribute = attribute
-exports.html      = html
 exports.compute   = compute
 exports.transform = transform
 exports.boolean   = boolean
+exports.toggle    = toggle
+exports.hover     = hover
 
 if('object' === typeof module) module.exports = exports
 else                           this.observable = exports
@@ -786,9 +815,34 @@ var i = o.input(_i, 'checked', 'change')
 var j = o.input(_j, 'checked', 'change')
 
 //just make i != j & j != i
-j(o.not(i)); i(o.not(j)); j(Math.random() > 0.5)
+i(Math.random() < 0.5)
+
+o.bind2(o.not(i), j)
 
 h('div', _i, _j)
+},
+function () {
+var o = require('observable')
+var h = require('hyperscript')
+var i, j
+h('div', 
+  i = h('input', {placeholder: 'first name'}),
+  j = h('input', {placeholder: 'last name'}),
+  h('h1', 'Greetings, ',
+    o.compute([o.input(i), o.input(j)], function (f, l) {
+      return f + ' ' + l + (f && l ? ' !' : '')
+    })
+  )
+)
+},
+function () {
+var o = require('observable')
+var h = require('hyperscript')
+var v = o()
+var d = h('h1', v, ' - ', o.boolean(v, 'OVER!', 'out'))
+o.bind1(v, o.hover(d)) //bind v to hover
+
+d
 }
 ];
 
@@ -810,6 +864,7 @@ require("/tmp.js");
 <p>It&#39;s basically just a <code>function</code> that can be called in 3 ways,
 If an observable is called with no arguments <code>f()</code>, it returns the current value.
 If it is called with an argument <code>f(value)</code>, it set that as the value.
+
 </p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
 var v = o()
@@ -819,10 +874,12 @@ v(Math.random())
 
 //get the value
 v()</code></pre>
-<p>And, finally, if an observable is called with another function, <code>f(function (v) {...})</code>,
-it <em>calls</em> that function with the new value, whenever the value changes.
+<p>And, finally, if an observable is called with another function, 
+<code>f(function (v) {...})</code>, it <em>calls</em> that function with the new value, 
+whenever the value changes.
 
 </p>
+<h2>value</h2>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
 var v = o()
 
@@ -834,8 +891,13 @@ setInterval(function () {
 
 v</code></pre>
 <p>How is this demo updating in real-time like that?
-It&#39;s becasue <code>observable</code> is integrated into 
+It&#39;s because <code>observable</code> is integrated into 
 <a href="https://github.com/dominictarr/hyperscript">hyperscript</a>!
+
+</p>
+<h2>input, &amp; transform</h2>
+<p>observe a input field, and transform it into different string.
+this transformation is a one way observable.
 
 </p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
@@ -861,7 +923,8 @@ h(&#39;div&#39;,
 <p>And there is many other cool things we can do to!
 
 </p>
-<p>Here is a simpler example
+<h1>not</h1>
+<p>Invert a boolean <code>observable</code>
 
 </p>
 <pre><code class="lang-js">var o = require(&#39;observable&#39;)
@@ -883,9 +946,44 @@ var i = o.input(_i, &#39;checked&#39;, &#39;change&#39;)
 var j = o.input(_j, &#39;checked&#39;, &#39;change&#39;)
 
 //just make i != j &amp; j != i
-j(o.not(i)); i(o.not(j)); j(Math.random() &gt; 0.5)
+i(Math.random() &lt; 0.5)
+
+o.bind2(o.not(i), j)
 
 h(&#39;div&#39;, _i, _j)</code></pre>
+<h2>compute</h2>
+<p>Compute a value from others, like a computed value in SQL.
+
+</p>
+<pre><code class="lang-js">var o = require(&#39;observable&#39;)
+var h = require(&#39;hyperscript&#39;)
+var i, j
+h(&#39;div&#39;, 
+  i = h(&#39;input&#39;, {placeholder: &#39;first name&#39;}),
+  j = h(&#39;input&#39;, {placeholder: &#39;last name&#39;}),
+  h(&#39;h1&#39;, &#39;Greetings, &#39;,
+    o.compute([o.input(i), o.input(j)], function (f, l) {
+      return f + &#39; &#39; + l + (f &amp;&amp; l ? &#39; !&#39; : &#39;&#39;)
+    })
+  )
+)</code></pre>
+<h2>hover</h2>
+<p>go true when the mouse is placed over an element
+
+</p>
+<pre><code class="lang-js">var o = require(&#39;observable&#39;)
+var h = require(&#39;hyperscript&#39;)
+var v = o()
+var d = h(&#39;h1&#39;, v, &#39; - &#39;, o.boolean(v, &#39;OVER!&#39;, &#39;out&#39;))
+o.bind1(v, o.hover(d)) //bind v to hover
+
+d</code></pre>
+<h2>Cool Links</h2>
+<p><code>observable</code> is intended for use with 
+<a href="https://github.com/dominictarr/hyperscript">hyperscript</a>
+combined they are less than 4 k, unminified.
+
+</p>
 <h2>License</h2>
 <p>MIT
 </p>
