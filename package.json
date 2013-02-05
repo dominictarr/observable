@@ -7,7 +7,7 @@
     "url": "git://github.com/dominictarr/observable.git"
   },
   "devDependencies": {
-    "hyperscript": "~1.0.1"
+    "hyperscript": "~1.0.1",
     "tape": "~0.2.2"
   },
   "scripts": {
