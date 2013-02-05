@@ -8,13 +8,11 @@
   },
   "devDependencies": {
     "hyperscript": "~1.0.1"
+    "tape": "~0.2.2"
   },
   "scripts": {
     "test": "set -e; for t in test/*.js; do node $t; done"
   },
   "author": "Dominic Tarr <dominic.tarr@gmail.com> (http://dominictarr.com)",
-  "license": "MIT",
-  "dependencies": {
-    "tape": "~0.2.2"
-  }
+  "license": "MIT"
 }
