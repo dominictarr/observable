@@ -131,10 +131,6 @@ function toggle (el, up, down) {
     })
   )}}
 
-function hover (el) {
-  return toggle(el, 'mouseover', 'mouseout')
-}
-
 function error (message) {
   throw new Error(message)
 }
@@ -166,12 +162,14 @@ exports.bind2     = bind2
 exports.value     = value
 exports.not       = not
 exports.input     =
+exports.property  = property
 exports.attribute = attribute
 exports.compute   = compute
 exports.transform = transform
 exports.boolean   = boolean
 exports.toggle    = toggle
-exports.hover     = hover
+exports.hover     = function (e) { return toggle(e, 'mouseover', 'mouseout')}
+exports.focus     = function (e) { return toggle(e, 'focus', 'blur')}
 
 if('object' === typeof module) module.exports = exports
 else                           this.observable = exports
