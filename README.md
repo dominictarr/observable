@@ -122,18 +122,34 @@ h('div',
 )
 ```
 
-## hover
+## hover & focus
 
-go true when the mouse is placed over an element
+``` js
+var h = require('hyperscript')
+var o = require('observable')
+
+h('div', 
+  strong = h('strong', {
+      contentEditable: true,
+      style:{display: 'inline-block'}
+    }, 
+    "editable thing"
+  ),
+  h('ul', 
+    h('li', 'focus: ', o.focus(strong)), 
+    h('li', 'hover: ', o.hover(strong))
+  )
+)
+```
+
+## screen/scroll
 
 ``` js
 var o = require('observable')
 var h = require('hyperscript')
-var v = o()
-var d = h('h1', v, ' - ', o.boolean(v, 'OVER!', 'out'))
-o.bind1(v, o.hover(d)) //bind v to hover
 
-d
+window.addEventListener('resize')
+
 ```
 
 ## License
