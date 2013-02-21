@@ -6,7 +6,7 @@ function bind1(a, b) {
 }
 //bind a to b and b to a -- Two Way Binding
 function bind2(a, b) {
-  b(a()); a(b); b(a); 
+  b(a()); a(b); b(a);
 }
 
 //---util-funtions------
@@ -29,7 +29,7 @@ function all(ary, val) {
 
 //remove a listener
 function remove(ary, item) {
-  delete ary[ary.indexOf(item)]  
+  delete ary[ary.indexOf(item)]
 }
 
 //register a listener
@@ -95,7 +95,7 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    listener(element[attr])
+    attr ? listener(element) : listener(element[attr])
   }
   on(element, event, onEvent)
   return function () {
@@ -112,6 +112,25 @@ function attribute(element, attr, event) {
     : isSet(val) ? element[attr] = val
     : listen(element, event, attr, val)
     )}}
+
+// observe a select element
+function select(element, attr, event) {
+  event = event || 'change'
+
+  return function (val) {
+    return (
+      isGet(val) ? element.options[element.selectedIndex].value
+    : isSet(val) ? _set(val)
+    : listen(element, event, attr, val)
+    )}
+
+    function _set(val) {
+        console.log('here'+val)
+        for(var i=0; i < element.options.length; i++) {
+          if(element.options[i].value == val) element.selectedIndex = i;
+        }
+    }
+}
 
 //toggle based on an event, like mouseover, mouseout
 function toggle (el, up, down) {
@@ -164,6 +183,7 @@ exports.not       = not
 exports.property  = property
 exports.input     =
 exports.attribute = attribute
+exports.select    = select
 exports.compute   = compute
 exports.transform = transform
 exports.boolean   = boolean
