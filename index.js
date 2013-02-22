@@ -95,8 +95,9 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    attr ? listener(element) : listener(element[attr])
+    attr ? listener(element[attr]) : listener(element[element.selectedIndex].value)
   }
+
   on(element, event, onEvent)
   return function () {
     off(element, event, onEvent)
@@ -114,22 +115,18 @@ function attribute(element, attr, event) {
     )}}
 
 // observe a select element
-function select(element, attr, event) {
-  event = event || 'change'
-
+function select(element) {
+  function _set(val) {
+    for(var i=0; i < element.options.length; i++) {
+      if(element.options[i].value == val) element.selectedIndex = i;
+    }
+  }
   return function (val) {
     return (
       isGet(val) ? element.options[element.selectedIndex].value
     : isSet(val) ? _set(val)
-    : listen(element, event, attr, val)
+    : listen(element, 'change', null, val)
     )}
-
-    function _set(val) {
-        console.log('here'+val)
-        for(var i=0; i < element.options.length; i++) {
-          if(element.options[i].value == val) element.selectedIndex = i;
-        }
-    }
 }
 
 //toggle based on an event, like mouseover, mouseout
