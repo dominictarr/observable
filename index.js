@@ -95,9 +95,9 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    attr ? listener(element[attr]) : listener(element[element.selectedIndex].value)
+    attr === -1 ? listener(element[element.selectedIndex].value)
+                : listener(element[attr])
   }
-
   on(element, event, onEvent)
   return function () {
     off(element, event, onEvent)
@@ -125,7 +125,7 @@ function select(element) {
     return (
       isGet(val) ? element.options[element.selectedIndex].value
     : isSet(val) ? _set(val)
-    : listen(element, 'change', null, val)
+    : listen(element, 'change', -1, val)
     )}
 }
 
