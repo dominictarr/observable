@@ -95,8 +95,7 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    attr === -1 ? listener(element[element.selectedIndex].value)
-                : listener(element[attr])
+    listener(attr())
   }
   on(element, event, onEvent)
   return function () {
@@ -107,15 +106,22 @@ function listen (element, event, attr, listener) {
 //observe html element - aliased as `input`
 function attribute(element, attr, event) {
   attr = attr || 'value'; event = event || 'input'
+  function _attr() {
+    return element[attr];
+  }
   return function (val) {
     return (
       isGet(val) ? element[attr]
     : isSet(val) ? element[attr] = val
-    : listen(element, event, attr, val)
-    )}}
+    : listen(element, event, _attr, val)
+    )}
+}
 
 // observe a select element
 function select(element) {
+  function _attr () {
+      return element[element.selectedIndex].value;
+  }
   function _set(val) {
     for(var i=0; i < element.options.length; i++) {
       if(element.options[i].value == val) element.selectedIndex = i;
@@ -125,7 +131,7 @@ function select(element) {
     return (
       isGet(val) ? element.options[element.selectedIndex].value
     : isSet(val) ? _set(val)
-    : listen(element, 'change', -1, val)
+    : listen(element, 'change', _attr, val)
     )}
 }
 
