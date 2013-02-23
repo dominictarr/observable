@@ -95,7 +95,7 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    listener(attr())
+    listener('function' === typeof attr ? attr() : attr)
   }
   on(element, event, onEvent)
   return function () {
@@ -106,14 +106,11 @@ function listen (element, event, attr, listener) {
 //observe html element - aliased as `input`
 function attribute(element, attr, event) {
   attr = attr || 'value'; event = event || 'input'
-  function _attr() {
-    return element[attr];
-  }
   return function (val) {
     return (
       isGet(val) ? element[attr]
     : isSet(val) ? element[attr] = val
-    : listen(element, event, _attr, val)
+    : listen(element, event, attr, val)
     )}
 }
 
