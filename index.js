@@ -95,7 +95,7 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    listener('function' === typeof attr ? attr() : attr)
+    listener('function' === typeof attr ? attr() : element[attr])
   }
   on(element, event, onEvent)
   return function () {
