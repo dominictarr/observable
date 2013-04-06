@@ -82,6 +82,8 @@ only 8 lines! that isn't much for what this baby can do!
 */
 
 function transform (observable, down, up) {
+  if('function' !== typeof observable)
+    throw new Error('transform expects an observable')
   return function (val) {
     return (
       isGet(val) ? down(observable())
