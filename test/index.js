@@ -12,19 +12,23 @@ tape('basic', function (t) {
   t.equal(v(), r1)
 
   var remove = v(function (val) {
-    t.equal(val, r2)
+    if(updated == 0) {
+      t.equal(val, r1)
+    } else {
+      t.equal(val, r2)
+    }
     updated ++
   })
 
-  t.equal(updated, 0)
+  t.equal(updated, 1)
   v(r2)
   t.equal('function', typeof remove)
-  t.equal(updated, 1)
+  t.equal(updated, 2)
   t.equal(v(), r2)
   remove()
   v(r3)
   //we removed the listener, so updated is not updated...
-  t.equal(updated, 1)
+  t.equal(updated, 2)
   t.equal(v(), r3)
 
   t.end()
