@@ -142,15 +142,6 @@ h('div',
 )
 ```
 
-## screen/scroll
-
-``` js
-var o = require('observable')
-var h = require('hyperscript')
-
-window.addEventListener('resize')
-
-```
 
 ## License
 
