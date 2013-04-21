@@ -51,7 +51,7 @@ function value () {
     return (
       isGet(val) ? _val
     : isSet(val) ? all(listeners, _val = val)
-    : (listeners.push(val), function () {
+    : (listeners.push(val), val(_val), function () {
         remove(listeners, val)
       })
   )}}
@@ -68,7 +68,7 @@ function property (model, key) {
     return (
       isGet(val) ? model.get(key) :
       isSet(val) ? model.set(key, val) :
-      (on(model, 'change:'+key, val), function () {
+      (on(model, 'change:'+key, val), val(model.get(key)), function () {
         off(model, 'change:'+key, val)
       })
     )}}
@@ -100,6 +100,7 @@ function listen (element, event, attr, listener) {
     listener('function' === typeof attr ? attr() : element[attr])
   }
   on(element, event, onEvent)
+  onEvent()
   return function () {
     off(element, event, onEvent)
   }
@@ -147,7 +148,7 @@ function toggle (el, up, down) {
     return (
       isGet(val) ? i
     : isSet(val) ? undefined //read only
-    : (on(el, up, onUp), on(el, down || up, onDown), function () {
+    : (on(el, up, onUp), on(el, down || up, onDown), val(i), function () {
       off(el, up, onUp); off(el, down || up, onDown)
     })
   )}}
@@ -165,6 +166,7 @@ function compute (observables, compute) {
       isGet(val) ? getAll()
     : isSet(val) ? error('read-only')
     : observables.forEach(function (obs) {
+        //not very good
         obs(function () { val(getAll()) })
       })
     )}}
