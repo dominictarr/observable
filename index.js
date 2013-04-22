@@ -159,8 +159,30 @@ function error (message) {
 
 function compute (observables, compute) {
   function getAll() {
+    console.log('getAll')
     return compute.apply(null, observables.map(function (e) {return e()}))
   }
+
+  var cur = [], init = true
+
+  var v = value()
+
+  observables.forEach(function (f, i) {
+    console.log('init')
+    f(function (val) {
+      cur[i] = val
+      if(init) return
+      v(compute.apply(null, cur))
+    })
+  })
+  init = false
+  v(function () {
+    console.log('comput')
+    compute.apply(null, cur)
+  })
+
+  return v
+/*  
   return function (val) {
     return (
       isGet(val) ? getAll()
@@ -169,7 +191,8 @@ function compute (observables, compute) {
         //not very good
         obs(function () { val(getAll()) })
       })
-    )}}
+    )}*/
+}
 
 function boolean (observable, truthy, falsey) {
   return transform(observable, function (val) {
