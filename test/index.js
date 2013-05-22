@@ -52,3 +52,21 @@ tape('boolean', function (t) {
 
   t.end()
 })
+
+tape('signal', function (t) {
+  var s = observable.signal()
+  var mutableSideEffect = "initialVal"
+
+  s("someVal")
+  s(function () { mutableSideEffect = "mutated" })
+  var mutableSideEffect = "initialVal" //reset
+  s("someVal")
+
+  t.equal(mutableSideEffect, "initialVal")
+
+  s("someOtherVal")
+
+  t.equal(mutableSideEffect, "mutated")
+
+  t.end()
+})
