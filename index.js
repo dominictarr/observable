@@ -202,6 +202,17 @@ function boolean (observable, truthy, falsey) {
     })
   }
 
+function signal () {
+  var _val, listeners = []
+  return function (val) {
+    return (
+      isGet(val) ? _val
+        : isSet(val) ? (!(_val===val) ? all(listeners, _val = val):"")
+        : (listeners.push(val), val(_val), function () {
+           remove(listeners, val)
+        })
+    )}}
+
 var exports = value
 exports.bind1     = bind1
 exports.bind2     = bind2
@@ -217,6 +228,7 @@ exports.boolean   = boolean
 exports.toggle    = toggle
 exports.hover     = function (e) { return toggle(e, 'mouseover', 'mouseout')}
 exports.focus     = function (e) { return toggle(e, 'focus', 'blur')}
+exports.signal    = signal
 
 if('object' === typeof module) module.exports = exports
 else                           this.observable = exports

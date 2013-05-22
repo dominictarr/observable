@@ -142,6 +142,13 @@ h('div',
 )
 ```
 
+## signal 
+
+Like observable except only update listeners when the value actually changes.
+
+``` js
+var s = require('observable').signal
+```
 
 ## License
 
