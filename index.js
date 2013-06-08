@@ -21,6 +21,16 @@ function isSet(val) {
   return 'function' !== typeof val
 }
 
+function isFunction (fun) {
+  return 'function' === typeof fun
+}
+
+function assertObservable (observable) {
+  if(!isFunction(observable))
+    throw new Error('transform expects an observable')
+  return observable
+}
+
 //trigger all listeners
 function all(ary, val) {
   for(var k in ary)
@@ -82,8 +92,7 @@ only 8 lines! that isn't much for what this baby can do!
 */
 
 function transform (observable, down, up) {
-  if('function' !== typeof observable)
-    throw new Error('transform expects an observable')
+  assertObservable(observable)
   return function (val) {
     return (
       isGet(val) ? down(observable())
@@ -97,7 +106,7 @@ function not(observable) {
 
 function listen (element, event, attr, listener) {
   function onEvent () {
-    listener('function' === typeof attr ? attr() : element[attr])
+    listener(isFunction(attr) ? attr() : element[attr])
   }
   on(element, event, onEvent)
   onEvent()
@@ -159,7 +168,6 @@ function error (message) {
 
 function compute (observables, compute) {
   function getAll() {
-    console.log('getAll')
     return compute.apply(null, observables.map(function (e) {return e()}))
   }
 
@@ -168,7 +176,6 @@ function compute (observables, compute) {
   var v = value()
 
   observables.forEach(function (f, i) {
-    console.log('init')
     f(function (val) {
       cur[i] = val
       if(init) return
@@ -177,30 +184,21 @@ function compute (observables, compute) {
   })
   init = false
   v(function () {
-    console.log('comput')
     compute.apply(null, cur)
   })
 
   return v
-/*  
-  return function (val) {
-    return (
-      isGet(val) ? getAll()
-    : isSet(val) ? error('read-only')
-    : observables.forEach(function (obs) {
-        //not very good
-        obs(function () { val(getAll()) })
-      })
-    )}*/
 }
 
 function boolean (observable, truthy, falsey) {
-  return transform(observable, function (val) {
+  return (
+    transform(observable, function (val) {
       return val ? truthy : falsey
     }, function (val) {
       return val == truthy ? true : false
     })
-  }
+  )
+}
 
 function signal () {
   var _val, listeners = []
