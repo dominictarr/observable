@@ -19,9 +19,24 @@ v(Math.random())
 v()
 ```
 
-And, finally, if an observable is called with another function, 
-`f(function (v) {...})`, it _calls_ that function with the new value, 
+If an observable is called with another function, it _calls_ that function with the new value, 
 whenever the value changes.
+
+```
+v(function(v){
+  console.log('Was changed to', v)
+})
+```
+
+And to stop being notifed of these changes, call the function that was returned
+
+```
+var stop = v(function(v){
+  console.log('Was changed to', v)
+})
+// then some time later
+stop()
+```
 
 ## value
 
