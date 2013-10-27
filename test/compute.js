@@ -22,3 +22,31 @@ tape('basic', function (t) {
   })
 })
 
+tape('computed observable', function (t) {
+  var v1 = o()
+  var v2 = o()
+
+  v1("one")
+  v2("two")
+  var v3 = o.compute([v1, v2], function (v1, v2) {
+      return v1 + v2
+  })
+  var values = []
+
+  v3(function onchange(value) {
+      values.push(value)
+  })
+
+  t.equal(v3(), "onetwo")
+
+  v1("three")
+
+  t.equal(v3(), "threetwo")
+
+  v2("four")
+
+  t.equal(v3(), "threefour")
+  t.deepEqual(values, ["onetwo", "threetwo", "threefour"])
+
+  t.end()
+})
