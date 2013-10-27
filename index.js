@@ -55,9 +55,14 @@ function off(emitter, event, listener) {
 
 //An observable that stores a value.
 
-function value () {
-  var _val, listeners = []
-  return function (val) {
+function value (initialValue) {
+  var _val = initialValue, listeners = []
+  observable.set = function (val) {
+    all(listeners, _val = val)
+  }
+  return observable
+
+  function observable(val) {
     return (
       isGet(val) ? _val
     : isSet(val) ? all(listeners, _val = val)

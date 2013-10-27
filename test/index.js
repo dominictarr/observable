@@ -34,6 +34,18 @@ tape('basic', function (t) {
   t.end()
 })
 
+tape('value', function (t) {
+  var v = observable(42)
+
+  t.equal(v(), 42)
+
+  v.set(50)
+
+  t.equal(v(), 50)
+
+  t.end()
+})
+
 tape('boolean', function (t) {
   var o = observable()
   var b = observable.boolean(o, 'Yes', 'No')
