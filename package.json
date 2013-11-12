@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "hyperscript": "~1.0.1",
-    "tape": "~0.2.2"
+    "tape": "~2.1.0"
   },
   "scripts": {
     "test": "set -e; for t in test/*.js; do node $t; done"

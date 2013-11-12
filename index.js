@@ -55,9 +55,14 @@ function off(emitter, event, listener) {
 
 //An observable that stores a value.
 
-function value () {
-  var _val, listeners = []
-  return function (val) {
+function value (initialValue) {
+  var _val = initialValue, listeners = []
+  observable.set = function (val) {
+    all(listeners, _val = val)
+  }
+  return observable
+
+  function observable(val) {
     return (
       isGet(val) ? _val
     : isSet(val) ? all(listeners, _val = val)
@@ -167,11 +172,9 @@ function error (message) {
 }
 
 function compute (observables, compute) {
-  function getAll() {
-    return compute.apply(null, observables.map(function (e) {return e()}))
-  }
-
-  var cur = [], init = true
+  var cur = observables.map(function (e) {
+    return e()
+  }), init = true
 
   var v = value()
 
@@ -182,6 +185,7 @@ function compute (observables, compute) {
       v(compute.apply(null, cur))
     })
   })
+  v(compute.apply(null, cur))
   init = false
   v(function () {
     compute.apply(null, cur)
