@@ -172,11 +172,9 @@ function error (message) {
 }
 
 function compute (observables, compute) {
-  function getAll() {
-    return compute.apply(null, observables.map(function (e) {return e()}))
-  }
-
-  var cur = [], init = true
+  var cur = observables.map(function (e) {
+    return e()
+  }), init = true
 
   var v = value()
 
@@ -187,6 +185,7 @@ function compute (observables, compute) {
       v(compute.apply(null, cur))
     })
   })
+  v(compute.apply(null, cur))
   init = false
   v(function () {
     compute.apply(null, cur)
