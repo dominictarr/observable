@@ -2,6 +2,9 @@
 
 A function as representation of a trackable mutable value.
 
+[![testling badge](https://ci.testling.com/dominictarr/observable.png)](https://ci.testling.com/dominictarr/observable)
+
+
 [Interactive Demo](http://dominictarr.github.com/observable)
 
 It's basically just a `function` that can be called in 3 ways,
