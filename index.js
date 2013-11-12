@@ -180,11 +180,11 @@ function compute (observables, compute) {
       v(compute.apply(null, cur))
     })
   })
+  v(compute.apply(null, cur))
   init = false
   v(function () {
     compute.apply(null, cur)
   })
-  v(compute.apply(null, cur))
 
   return v
 }
