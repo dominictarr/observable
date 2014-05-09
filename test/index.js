@@ -1,5 +1,5 @@
 var tape = require('tape')
-var observable = require('..')
+var observable = require('../')
 tape('basic', function (t) {
   var v = observable.value()
 
