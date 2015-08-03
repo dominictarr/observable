@@ -1,4 +1,5 @@
 ;(function () {
+"use strict";
 
 // bind a to b -- One Way Binding
 function bind1(a, b) {
@@ -233,5 +234,5 @@ exports.focus     = function (e) { return toggle(e, 'focus', 'blur')}
 exports.signal    = signal
 
 if('object' === typeof module) module.exports = exports
-else                           this.observable = exports
+else                           window.observable = exports
 })()
