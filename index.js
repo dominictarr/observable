@@ -35,7 +35,7 @@ function assertObservable (observable) {
 //trigger all listeners
 function all(ary, val) {
   for(var k in ary)
-    ary[k](val)
+    if (ary.hasOwnProperty(k)) ary[k](val)
 }
 
 //remove a listener
