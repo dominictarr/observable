@@ -58,15 +58,17 @@ function off(emitter, event, listener) {
 
 function value (initialValue) {
   var _val = initialValue, listeners = []
-  observable.set = function (val) {
+  function set(val) {
+    if (val === _val) return;
     all(listeners, _val = val)
   }
+  observable.set = set;
   return observable
 
   function observable(val) {
     return (
       isGet(val) ? _val
-    : isSet(val) ? all(listeners, _val = val)
+    : isSet(val) ? set(val)
     : (listeners.push(val), val(_val), function () {
         remove(listeners, val)
       })
